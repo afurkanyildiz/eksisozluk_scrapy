@@ -1,0 +1,44 @@
+version: '3.1'
+
+services:
+
+  mongo:
+    image: mongo:7.0.4
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: toor
+      MONGO_INITDB_DATABASE: gundems
+    volumes:
+      - mongodb:/data/db
+    ports:
+      - 27017:27017
+    networks:
+      - mongo_net
+  
+  django:
+    container_name: django
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongo
+    networks:
+      - mongo_net
+  
+  scrapy:
+    container_name: scrapy
+    build:
+      context: .
+      dockerfile: ./scrapy_project/Dockerfile
+    environment:
+      MONGO_URI: mongodb://root:toor@mongo:27017/
+    networks:
+      - mongo_net
+
+volumes:
+  mongodb:
+
+networks:
+  mongo_net:
+    driver: bridge
